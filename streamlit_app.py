@@ -81,18 +81,23 @@ elif options == "Prediction":
     st.header("Predict House Price")
 
     st.write("Enter the features of the house:")
+
+    # Filter only numeric columns for user input
+    numeric_columns = df.select_dtypes(include=['float64', 'int64']).columns
+
     input_features = []
-    for col in df.columns[:-1]:
+    for col in numeric_columns:
         val = st.number_input(f"{col}", value=float(df[col].mean()))
         input_features.append(val)
 
     input_features = [input_features]
     scaler = StandardScaler()
-    scaler.fit(df[df.columns[:-1]])
+    scaler.fit(df[numeric_columns])  # Fit the scaler on the numeric columns
     input_scaled = scaler.transform(input_features)
 
+    # Train SVR model
     svr = SVR(kernel='rbf', C=100, epsilon=0.1)
-    svr.fit(scaler.fit_transform(df[df.columns[:-1]]), df['price'])
+    svr.fit(scaler.fit_transform(df[numeric_columns]), df['price'])  # Fit the model on the numeric columns
     predicted_price = svr.predict(input_scaled)
 
     st.write(f"**Predicted Price:** ${predicted_price[0]:,.2f}")
